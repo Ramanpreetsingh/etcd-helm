@@ -1,0 +1,87 @@
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: etcd
+  namespace: {{ .Values.namespace }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: etcd
+  template:
+    metadata:
+      labels:
+        app: etcd
+        updated: now
+    spec:
+      containers:
+        - name: etcd
+          image: 'gcr.io/etcd-development/etcd:v3.4.14'
+          command:
+            - /bin/sh
+            - '-ec'
+            - env && /usr/local/bin/etcd
+          args:
+            - '--data-dir=/etcd-data'
+            - '--name=${POD_NAME}'
+            - '--initial-advertise-peer-urls=http://${POD_IP}:2380'
+            - '--listen-peer-urls=http://0.0.0.0:2380'
+            - '--advertise-client-urls=http://${POD_IP}:2379'
+            - '--listen-client-urls=http://0.0.0.0:2379'
+            - '--initial-cluster=${CLUSTER}'
+            - '--initial-cluster-state=${CLUSTER_STATE}'
+            - '--initial-cluster-token=${TOKEN}'	
+          ports:
+            - name: client
+              containerPort: 2379
+              protocol: TCP
+            - name: peer
+              containerPort: 2380
+              protocol: TCP
+          env:
+            - name: TOKEN
+              value: some-secret
+            - name: CLUSTER_STATE
+              value: new
+            - name: CLUSTER
+              value: 'etcd-0.raman:2380,etcd-1.raman:2380,etcd-2.raman:2380'
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: metadata.name
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  apiVersion: v1
+                  fieldPath: status.podIP
+          resources: {}
+          volumeMounts:
+            - name: data
+              mountPath: /etcd-data
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 10
+      dnsPolicy: ClusterFirst
+      schedulerName: default-scheduler
+  volumeClaimTemplates:
+    - kind: PersistentVolumeClaim
+      apiVersion: v1
+      metadata:
+        name: data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+        storageClassName: {{ .Values.storage }}
+        volumeMode: Filesystem
+  serviceName: etcd
+  podManagementPolicy: OrderedReady
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      partition: 0

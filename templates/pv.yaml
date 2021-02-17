@@ -1,0 +1,25 @@
+{{- $scn := .Values.storageClassName }}
+{{ $count := .Values.replicaCount | int }}
+{{- range $key := until $count }}
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: data-etcd-{{$key}}
+  labels:
+    type: local
+  finalizers:
+    - kubernetes.io/pv-protection
+spec:
+  capacity:
+    storage: 5Gi
+  hostPath:
+    path: /Users/ramanpreetsingh/etcd/{{$key}}	
+    #path: /Users/thomas/etcd/{{$key}}
+    type: ''
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: {{ $scn }}
+  volumeMode: Filesystem
+---
+{{- end }}
