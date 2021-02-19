@@ -38,6 +38,26 @@ spec:
             - name: peer
               containerPort: 2380
               protocol: TCP
+          readinessProbe:
+            exec:
+              command:
+               - etcdctl
+               - endpoint
+               - health
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1          
+          livenessProbe:
+            exec:
+              command:
+               - etcdctl
+               - endpoint
+               - health
+            initialDelaySeconds: 15
+            periodSeconds: 5
+            failureThreshold: 3
+            successThreshold: 1	
           env:
             - name: TOKEN
               value: some-secret
@@ -77,10 +97,10 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: {{ .Values.storage }}
+        storageClassName: {{ .Values.storageClassName }}
         volumeMode: Filesystem
   serviceName: etcd
-  podManagementPolicy: OrderedReady
+  podManagementPolicy: OrderedReady 
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
