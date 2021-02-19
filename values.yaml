@@ -1,3 +1,4 @@
 namespace: raman
 storageClassName: local-storage
 replicaCount: 3
+volumeBasePath: /Users/ramanpreetsingh/etcd/

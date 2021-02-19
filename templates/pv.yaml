@@ -1,10 +1,11 @@
 {{- $scn := .Values.storageClassName }}
-{{ $count := .Values.replicaCount | int }}
-{{- range $key := until $count }}
+{{- $volumeBasePath := .Values.volumeBasePath }}
+{{- $count := .Values.replicaCount | int }}
+{{- range $index := until $count }}
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: data-etcd-{{$key}}
+  name: data-etcd-{{$index}}
   labels:
     type: local
   finalizers:
@@ -13,8 +14,7 @@ spec:
   capacity:
     storage: 5Gi
   hostPath:
-    path: /Users/ramanpreetsingh/etcd/{{$key}}	
-    #path: /Users/thomas/etcd/{{$key}}
+    path: {{ $volumeBasePath }}{{ $index }}  
     type: ''
   accessModes:
     - ReadWriteOnce
