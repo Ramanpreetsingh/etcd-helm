@@ -4,7 +4,7 @@ metadata:
   name: etcd
   namespace: {{ .Values.namespace }}
 spec:
-  replicas: {{ .Values.replicaCount }}
+  replicas: {{ required "A valid .Values.replicasCount entry required!" .Values.replicaCount }}
   selector:
     matchLabels:
       app: etcd

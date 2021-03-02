@@ -1,5 +1,5 @@
-{{- $scn := .Values.storageClassName }}
-{{- $volumeBasePath := .Values.volumeBasePath }}
+{{- $scn :=  default "default-storage-class" .Values.storageClassName }}
+{{- $volumeBasePath :=  required "A valid .Values.volumeBasePath entry required!" .Values.volumeBasePath }}
 {{- $count := .Values.replicaCount | int }}
 {{- range $index := until $count }}
 kind: PersistentVolume
